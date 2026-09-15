@@ -1,9 +1,7 @@
 package com.example.chatbot.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.example.chatbot.dto.ChatRequest;
 import com.example.chatbot.service.AgeCalculationService;
@@ -68,17 +65,6 @@ public class ChatBotController {
 
 	@GetMapping({ "/age", "/age/" })
 	public ResponseEntity<String> missingBirthYear() {
-		return ResponseEntity.badRequest().body("Birth year is required");
-	}
-
-	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<String> handleInvalidBirthYear(IllegalArgumentException exception) {
-		return ResponseEntity.badRequest().body(exception.getMessage());
-	}
-
-	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
-	public ResponseEntity<String> handleNonIntegerBirthYear() {
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body("Birth year must be an integer");
+		throw new IllegalArgumentException("Birth year is required");
 	}
 }

@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ class ChatBotControllerTest {
 		ageCalculationService = mock(AgeCalculationService.class);
 		mockMvc = MockMvcBuilders
 				.standaloneSetup(new ChatBotController(ageCalculationService))
+				.setControllerAdvice(new ApiExceptionHandler())
 				.build();
 	}
 
@@ -38,14 +40,14 @@ class ChatBotControllerTest {
 	void rejectsNonIntegerYear() throws Exception {
 		mockMvc.perform(get("/age/abc"))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string("Birth year must be an integer"));
+				.andExpect(jsonPath("$.error").value("Birth year must be an integer"));
 	}
 
 	@Test
 	void rejectsMissingYear() throws Exception {
 		mockMvc.perform(get("/age"))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string("Birth year is required"));
+				.andExpect(jsonPath("$.error").value("Birth year is required"));
 	}
 
 	@Test
@@ -56,7 +58,7 @@ class ChatBotControllerTest {
 
 		mockMvc.perform(get("/age/999"))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string(
+				.andExpect(jsonPath("$.error").value(
 						"Birth year must be a four-digit year no later than the current year"));
 	}
 
@@ -68,7 +70,7 @@ class ChatBotControllerTest {
 
 		mockMvc.perform(get("/age/-1"))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string(
+				.andExpect(jsonPath("$.error").value(
 						"Birth year must be a four-digit year no later than the current year"));
 	}
 
@@ -80,7 +82,7 @@ class ChatBotControllerTest {
 
 		mockMvc.perform(get("/age/2027"))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string(
+				.andExpect(jsonPath("$.error").value(
 						"Birth year must be a four-digit year no later than the current year"));
 	}
 }
