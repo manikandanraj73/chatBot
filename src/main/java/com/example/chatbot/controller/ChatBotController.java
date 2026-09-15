@@ -1,41 +1,52 @@
 package com.example.chatbot.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.example.chatbot.dto.ChatRequest;
+import com.example.chatbot.service.AgeCalculationService;
 import com.example.chatbot.service.ChatBotService;
 import com.example.chatbot.service.ChatBotServiceV2;
 import com.example.chatbot.service.TableService;
 
-
-
 @RestController
-@RequestMapping("/chatbot")
+@RequestMapping
 public class ChatBotController {
 	@Autowired
 	private ChatBotService chatBotService;
-	
+
 	@Autowired
 	private ChatBotServiceV2 chatBotServiceV2;
 
 	@Autowired
 	private TableService tableService;
 
-	@PostMapping("/request")
-	public String chatRequest(@RequestBody ChatRequest chatRequest) throws Exception {
+	private final AgeCalculationService ageCalculationService;
+
+	@Autowired
+	public ChatBotController(AgeCalculationService ageCalculationService) {
+		this.ageCalculationService = ageCalculationService;
+	}
+
+	@PostMapping("/chatbot/request")
+	public String chat(@RequestBody ChatRequest chatRequest) throws Exception {
 		System.out.println("You : " + chatRequest.getMessage());
 		String response = chatBotService.chat(chatRequest.getMessage());
 		System.out.println("AI : " + response);
 		return response;
 	}
-	
-	@PostMapping("/v2")
+
+	@PostMapping("/chatbot/v2")
 	public String chatRequestV2(@RequestBody ChatRequest chatRequest) throws Exception {
 		System.out.println("You (V2) : " + chatRequest.getMessage());
 		String response = chatBotServiceV2.chat(chatRequest.getMessage());
@@ -43,11 +54,31 @@ public class ChatBotController {
 		return response;
 	}
 
-	@PostMapping("/table")
+	@PostMapping("/chatbot/table")
 	public ResponseEntity<String> generateTable(@RequestParam(name = "number", required = false) Integer number) {
-		// Accept number as a request parameter; service will validate and generate the table string
 		tableService.validateNumber(number);
 		String result = tableService.generateTableString(number);
 		return ResponseEntity.ok(result);
+	}
+
+	@GetMapping("/age/{birthYear}")
+	public String calculateAge(@PathVariable int birthYear) {
+		return ageCalculationService.calculateAge(birthYear);
+	}
+
+	@GetMapping({ "/age", "/age/" })
+	public ResponseEntity<String> missingBirthYear() {
+		return ResponseEntity.badRequest().body("Birth year is required");
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<String> handleInvalidBirthYear(IllegalArgumentException exception) {
+		return ResponseEntity.badRequest().body(exception.getMessage());
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<String> handleNonIntegerBirthYear() {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body("Birth year must be an integer");
 	}
 }
