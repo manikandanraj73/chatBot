@@ -1,8 +1,11 @@
 <!--
 Sync Impact Report
-- Version change: unratified scaffold -> 1.0.0
-- Modified principles: none; all five principles established from the scaffold
-- Added sections: Technology and Security Constraints; Development Workflow and Quality Gates
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles:
+  - I. Clear Service Boundaries: expanded to explicitly require that business logic
+	resides only in the Service layer (controllers and repositories must not
+	contain domain/business rules).
+- Added sections: none
 - Removed sections: none
 - Follow-up TODOs: RATIFICATION_DATE remains TODO because the original adoption date is unknown
 -->
@@ -18,6 +21,20 @@ integration logic, and DTOs define request or response contracts. New external i
 MUST be isolated behind a service boundary so that transport details do not leak into
 controllers or domain-facing code. This keeps the chatbot understandable and makes each
 boundary independently testable.
+
+Business-logic placement rules:
+- Business logic (domain rules, orchestration, non-trivial validation, decision-making,
+  and workflows) MUST be implemented in Service-layer components. Services are the
+  authoritative location for application behavior.
+- Controllers MUST remain thin: accept and perform minimal transport-level validation,
+  map to DTOs, handle authentication/authorization checks, and delegate to Services.
+  They MUST NOT implement business rules or decision logic.
+- Repositories/DAOs MUST be limited to persistence responsibilities, queries, and simple
+  mapping between persistence models and domain/DTOs. They MUST NOT contain business
+  decision logic.
+- DTOs and request/response models MUST be simple carriers and MAY include only
+  transport-level validation annotations. Complex validation belongs in Services or
+  dedicated validators invoked from Services.
 
 ### II. Contract-First HTTP API
 Every endpoint MUST define an intentional HTTP method, route, request shape, response shape,

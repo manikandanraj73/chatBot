@@ -12,8 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class ChatBotService {
@@ -22,7 +22,7 @@ public class ChatBotService {
 
 	RestTemplate restTemplate = new RestTemplate();
 
-	public String chat(String request) {
+	public String chat(String request) throws Exception {
 		String url = "https://openrouter.ai/api/v1/chat/completions";
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -33,7 +33,9 @@ public class ChatBotService {
 			    "model", "openrouter/free",
 			    "messages", List.of(
 			    		Map.of("role","user",
-			    				"content",request))
+			    				"content",request)),
+			    "temperature", 0.7,
+				"max_tokens", 100
 			);
 		
 		HttpEntity<?>entity = new HttpEntity<>(body,headers);
@@ -43,7 +45,7 @@ public class ChatBotService {
 		ResponseEntity<String> aiResponse = restTemplate.exchange(url, HttpMethod.POST,entity,String.class);
 		ObjectMapper objectMapper = new ObjectMapper();
 		JsonNode node= objectMapper.readTree(aiResponse.getBody());
-		String answer = node.path("choices").get(0).path("message").path("content").asString();
+		String answer = node.path("choices").get(0).path("message").path("content").asText();
 										
 		return answer;
 	}
