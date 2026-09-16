@@ -36,7 +36,7 @@ public class ChatBotController {
 	}
 
 	@PostMapping("/chatbot/request")
-	public String chat(@RequestBody ChatRequest chatRequest) {
+	public String chat(@RequestBody ChatRequest chatRequest) throws Exception {
 		ChatHistoryService.RequestMetadata requestMetadata = chatHistoryService.captureRequest();
 		System.out.println("You : " + chatRequest.getMessage());
 		String response = chatBotService.chat(chatRequest.getMessage());
