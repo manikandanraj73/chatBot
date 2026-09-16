@@ -10,42 +10,59 @@ import java.time.ZoneOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.example.chatbot.exception.BirthDateValidationException;
+
 class AgeCalculationServiceTest {
 	private AgeCalculationService service;
 
 	@BeforeEach
 	void setUp() {
-		Clock fixedClock = Clock.fixed(Instant.parse("2026-06-15T00:00:00Z"), ZoneOffset.UTC);
+		Clock fixedClock = Clock.fixed(Instant.parse("2026-09-16T00:00:00Z"), ZoneOffset.UTC);
 		service = new AgeCalculationService(fixedClock);
 	}
 
 	@Test
-	void calculatesAgeFromBirthYear() {
-		assertEquals("Now your age is: 26", service.calculateAge(2000));
+	void calculatesExactAgeFromBirthDate() {
+		assertEquals("Now your age is: 26 years, 3 months, 1 day",
+				service.calculateAge("2000-06-15"));
 	}
 
 	@Test
-	void rejectsYearOutsideFourDigitRange() {
-		IllegalArgumentException exception = assertThrows(
-				IllegalArgumentException.class,
-				() -> service.calculateAge(999));
-
-		assertEquals("Birth year must be a four-digit year no later than the current year",
-				exception.getMessage());
+	void retainsZeroValuesAndUsesSingularLabels() {
+		assertEquals("Now your age is: 1 year, 0 months, 0 days",
+				service.calculateAge("2025-09-16"));
 	}
 
 	@Test
-	void rejectsNegativeYear() {
-		IllegalArgumentException exception = assertThrows(
-				IllegalArgumentException.class,
-				() -> service.calculateAge(-1));
-
-		assertEquals("Birth year must be a four-digit year no later than the current year",
-				exception.getMessage());
+	void normalizesMonthEndDates() {
+		service = new AgeCalculationService(
+				Clock.fixed(Instant.parse("2026-09-30T00:00:00Z"), ZoneOffset.UTC));
+		assertEquals("Now your age is: 1 year, 8 months, 0 days",
+				service.calculateAge("2025-01-31"));
 	}
 
 	@Test
-	void rejectsFutureYear() {
-		assertThrows(IllegalArgumentException.class, () -> service.calculateAge(2027));
+	void acceptsLeapYearBirthDate() {
+		service = new AgeCalculationService(
+				Clock.fixed(Instant.parse("2026-02-28T00:00:00Z"), ZoneOffset.UTC));
+		assertEquals("Now your age is: 2 years, 0 months, 0 days",
+				service.calculateAge("2024-02-29"));
+	}
+
+	@Test
+	void rejectsMalformedOrImpossibleDate() {
+		assertThrows(BirthDateValidationException.class,
+				() -> service.calculateAge("2024-02-30"));
+		assertThrows(BirthDateValidationException.class,
+				() -> service.calculateAge("2000"));
+		assertThrows(BirthDateValidationException.class,
+				() -> service.calculateAge("2000-6-15"));
+	}
+
+	@Test
+	void rejectsMissingAndFutureDate() {
+		assertThrows(BirthDateValidationException.class, () -> service.calculateAge(""));
+		assertThrows(BirthDateValidationException.class,
+				() -> service.calculateAge("2026-09-17"));
 	}
 }
