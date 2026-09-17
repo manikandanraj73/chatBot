@@ -109,11 +109,11 @@ This file converts the spec into actionable, dependency-ordered tasks focused on
 - ID: T7
 - Priority: Low
 - Files to update:
-  - `specs/001-math-table-generator/spec.md` (link implementation)
+  - `../spec.md` (link implementation)
   - Optional README snippet or docs: `docs/API.md` or project README
-- Description: Add curl examples and note the new endpoint and error behaviors. Reference test coverage and where business logic lives (TableService).
+- Description: Keep the feature specification aligned with the endpoint and error behaviors. Reference test coverage and where business logic lives (TableService).
 - Acceptance criteria:
-  - Spec links the implemented files and includes example curl commands.
+  - The feature specification remains aligned with the implemented endpoint and error behaviors.
 - Estimate: 0.5h
 - Depends on: T4
 

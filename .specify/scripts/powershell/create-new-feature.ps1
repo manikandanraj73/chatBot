@@ -6,9 +6,6 @@ param(
     [switch]$AllowExistingBranch,
     [switch]$DryRun,
     [string]$ShortName,
-    [Parameter()]
-    [string]$Number = '',
-    [switch]$Timestamp,
     [switch]$Help,
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
     [string[]]$FeatureDescription
@@ -18,27 +15,24 @@ $maxBranchLength = 244
 
 # Show help if requested
 if ($Help) {
-    Write-Host "Usage: ./create-new-feature.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] [-Number N] [-Timestamp] <feature description>"
+    Write-Host "Usage: ./create-new-feature.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] <feature description>"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Json               Output in JSON format"
     Write-Host "  -DryRun             Compute feature name and paths without creating directories or files"
     Write-Host "  -AllowExistingBranch  Reuse an existing feature directory if it already exists"
     Write-Host "  -ShortName <name>   Provide a custom short name (2-4 words) for the feature"
-    Write-Host "  -Number N           Prefer a feature number (auto-corrected if its specs prefix exists)"
-    Write-Host "  -Timestamp          Use timestamp prefix (YYYYMMDD-HHMMSS) instead of sequential numbering"
     Write-Host "  -Help               Show this help message"
     Write-Host ""
     Write-Host "Examples:"
     Write-Host "  ./create-new-feature.ps1 'Add user authentication system' -ShortName 'user-auth'"
     Write-Host "  ./create-new-feature.ps1 'Implement OAuth2 integration for API'"
-    Write-Host "  ./create-new-feature.ps1 -Timestamp -ShortName 'user-auth' 'Add user authentication'"
     exit 0
 }
 
 # Check if feature description provided
 if (-not $FeatureDescription -or $FeatureDescription.Count -eq 0) {
-    Write-Error "Usage: ./create-new-feature.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] [-Number N] [-Timestamp] <feature description>"
+    Write-Error "Usage: ./create-new-feature.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] <feature description>"
     exit 1
 }
 
@@ -50,62 +44,12 @@ if ([string]::IsNullOrWhiteSpace($featureDesc)) {
     exit 1
 }
 
-function Get-HighestNumberFromSpecs {
-    param([string]$SpecsDir)
-
-    [long]$highest = 0
-    if (Test-Path $SpecsDir) {
-        Get-ChildItem -Path $SpecsDir -Directory | ForEach-Object {
-            # Match sequential prefixes (>=3 digits), but skip timestamp dirs.
-            if ($_.Name -match '^(\d{3,})-' -and $_.Name -notmatch '^\d{8}-\d{6}-') {
-                [long]$num = 0
-                if ([long]::TryParse($matches[1], [ref]$num) -and $num -gt $highest) {
-                    $highest = $num
-                }
-            }
-        }
-    }
-    return $highest
-}
-
-function Test-SpecPrefixInUse {
-    param(
-        [string]$SpecsDir,
-        [string]$FeatureNum
-    )
-
-    if (-not (Test-Path -LiteralPath $SpecsDir -PathType Container)) {
-        return $false
-    }
-
-    return $null -ne (Get-ChildItem -LiteralPath $SpecsDir -Directory -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -like "$FeatureNum-*" } |
-        Select-Object -First 1)
-}
-
 function ConvertTo-CleanBranchName {
     param([string]$Name)
 
     return $Name.ToLower() -replace '[^a-z0-9]', '-' -replace '-{2,}', '-' -replace '^-', '' -replace '-$', ''
 }
 
-function Get-FittedBranchName {
-    param(
-        [string]$FeatureNum,
-        [string]$BranchSuffix
-    )
-
-    $fittedName = "$FeatureNum-$BranchSuffix"
-    if ($fittedName.Length -gt $maxBranchLength) {
-        $prefixLength = $FeatureNum.Length + 1
-        $maxSuffixLength = $maxBranchLength - $prefixLength
-        $truncatedSuffix = $BranchSuffix.Substring(0, [Math]::Min($BranchSuffix.Length, $maxSuffixLength))
-        $truncatedSuffix = $truncatedSuffix -replace '-$', ''
-        $fittedName = "$FeatureNum-$truncatedSuffix"
-    }
-
-    return $fittedName
-}
 # Load common functions (includes Get-RepoRoot and Resolve-Template)
 . "$PSScriptRoot/common.ps1"
 
@@ -114,9 +58,30 @@ $repoRoot = Get-RepoRoot
 
 Set-Location $repoRoot
 
-$specsDir = Join-Path $repoRoot 'specs'
+function Get-ModuleName {
+    param([string]$Description)
+
+    $stopWords = @('i', 'a', 'an', 'the', 'to', 'for', 'of', 'in', 'on', 'at', 'by', 'with', 'from', 'is', 'are', 'add', 'fix', 'create', 'implement', 'update')
+    $words = ($Description.ToLower() -replace '[^a-z0-9\s]', ' ') -split '\s+' | Where-Object { $_ -and $_.Length -ge 3 -and $stopWords -notcontains $_ }
+    if (-not $words) {
+        return 'general'
+    }
+    return $words[0]
+}
+
+function Get-FeatureId {
+    param([string]$Description)
+
+    $id = ConvertTo-CleanBranchName -Name $Description
+    if ([string]::IsNullOrWhiteSpace($id)) {
+        return 'feature'
+    }
+    return (($id -split '-') | Where-Object { $_ } | Select-Object -First 6) -join '-'
+}
+
+$developmentDir = Join-Path $repoRoot 'development'
 if (-not $DryRun) {
-    New-Item -ItemType Directory -Path $specsDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $developmentDir -Force | Out-Null
 }
 
 # Function to generate branch name with stop word filtering and length filtering
@@ -185,104 +150,46 @@ if ($ShortName) {
     $branchSuffix = Get-BranchName -Description $featureDesc
 }
 
-# Treat an explicit empty string as omitted, matching the bash and Python twins.
-$hasNumber = $PSBoundParameters.ContainsKey('Number') -and $Number -ne ''
-
-# Warn if -Number and -Timestamp are both specified.
-if ($Timestamp -and $hasNumber) {
-    [Console]::Error.WriteLine("[specify] Warning: -Number is ignored when -Timestamp is used")
-    $Number = ''
-}
-
-# Determine branch prefix
-if ($Timestamp) {
-    $featureNum = Get-Date -Format 'yyyyMMdd-HHmmss'
-    $branchName = "$featureNum-$branchSuffix"
-} else {
-    # Determine branch number from existing feature directories. Auto-detect only
-    # when -Number was not supplied; an explicit value (including 0) is honored,
-    # matching the bash twin's `[ -z "$BRANCH_NUMBER" ]` check.
-    [long]$resolvedNumber = 0
-    if (-not $hasNumber) {
-        $highestNumber = Get-HighestNumberFromSpecs -SpecsDir $specsDir
-        if ($highestNumber -eq [long]::MaxValue) {
-            Write-Error "Error: feature number must be between 0 and $([long]::MaxValue), got '9223372036854775808'"
-            exit 1
-        }
-        $resolvedNumber = $highestNumber + 1
-    } elseif ($Number -notmatch '^[0-9]+$') {
-        Write-Error "Error: -Number must be an unsigned integer, got '$Number'"
-        exit 1
-    } elseif (-not [long]::TryParse($Number, [ref]$resolvedNumber)) {
-        Write-Error "Error: -Number must be between 0 and $([long]::MaxValue), got '$Number'"
-        exit 1
-    }
-
-    $featureNum = ('{0:000}' -f $resolvedNumber)
-
-    # Treat an explicit number as a preference when its prefix is already used
-    # by a feature directory. Auto-detected numbers are already conflict-free.
-    $specConflict = $false
-    if ($hasNumber -and (Test-Path -LiteralPath $specsDir -PathType Container)) {
-        $requestedBranchName = Get-FittedBranchName -FeatureNum $featureNum -BranchSuffix $branchSuffix
-        $requestedDir = Join-Path $specsDir $requestedBranchName
-        if (-not $AllowExistingBranch -or -not (Test-Path -LiteralPath $requestedDir -PathType Container)) {
-            $specConflict = Test-SpecPrefixInUse -SpecsDir $specsDir -FeatureNum $featureNum
-        }
-    }
-
-    if ($specConflict) {
-        $requestedNum = $featureNum
-        $highestNumber = Get-HighestNumberFromSpecs -SpecsDir $specsDir
-        $resolvedNumber = $highestNumber
-        do {
-            if ($resolvedNumber -eq [long]::MaxValue) {
-                Write-Error "Error: feature number must be between 0 and $([long]::MaxValue), got '9223372036854775808'"
-                exit 1
-            }
-            $resolvedNumber++
-            $featureNum = ('{0:000}' -f $resolvedNumber)
-        } while (Test-SpecPrefixInUse -SpecsDir $specsDir -FeatureNum $featureNum)
-        [Console]::Error.WriteLine("[specify] Warning: -Number $requestedNum conflicts with an existing spec directory; using $featureNum instead")
-    }
-
-}
+$moduleName = Get-ModuleName -Description $featureDesc
+$featureId = Get-FeatureId -Description $featureDesc
+$featureNum = $featureId
+$branchName = "$moduleName-$featureId"
 
 # GitHub enforces a 244-byte limit on branch names
 # Validate and truncate if necessary
-$originalBranchName = "$featureNum-$branchSuffix"
-$branchName = Get-FittedBranchName -FeatureNum $featureNum -BranchSuffix $branchSuffix
+$originalBranchName = $branchName
+if ($branchName.Length -gt $maxBranchLength) {
+    $branchName = $branchName.Substring(0, $maxBranchLength).TrimEnd('-')
+}
 if ($branchName -ne $originalBranchName) {
     [Console]::Error.WriteLine("[specify] Warning: Branch name exceeded GitHub's 244-byte limit")
     [Console]::Error.WriteLine("[specify] Original: $originalBranchName ($($originalBranchName.Length) bytes)")
     [Console]::Error.WriteLine("[specify] Truncated to: $branchName ($($branchName.Length) bytes)")
 }
 
-$featureDir = Join-Path $specsDir $branchName
+$featureDir = Join-Path (Join-Path $developmentDir $moduleName) $featureId
 $specFile = Join-Path $featureDir 'spec.md'
+$requirementFile = Join-Path $featureDir 'requirement.md'
+$serviceDir = Join-Path $featureDir 'service'
 
 if (-not $DryRun) {
     if ((Test-Path -LiteralPath $featureDir -PathType Container) -and -not $AllowExistingBranch) {
-        if ($Timestamp) {
-            Write-Error "Error: Feature directory '$featureDir' already exists. Rerun to get a new timestamp or use a different -ShortName."
-        } else {
-            Write-Error "Error: Feature directory '$featureDir' already exists. Please use a different feature name or specify a different number with -Number."
-        }
+        Write-Error "Error: Feature directory '$featureDir' already exists. Please use a different feature description or use -AllowExistingBranch."
         exit 1
     }
 
     $needsSpec = -not (Test-Path -PathType Leaf $specFile)
-    $content = $null
-    if ($needsSpec) {
-        $content = Resolve-TemplateContent -TemplateName 'spec-template' -RepoRoot $repoRoot
-    }
+    $needsRequirement = -not (Test-Path -PathType Leaf $requirementFile)
+    $specContent = if ($needsSpec) { Resolve-TemplateContent -TemplateName 'spec-template' -RepoRoot $repoRoot }
+    $requirementContent = if ($needsRequirement) { Resolve-TemplateContent -TemplateName 'requirement-template' -RepoRoot $repoRoot }
 
     New-Item -ItemType Directory -Path $featureDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $serviceDir -Force | Out-Null
 
     if ($needsSpec) {
-        if ($null -ne $content) {
+        if ($null -ne $specContent) {
             $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-            [System.IO.File]::WriteAllText($specFile, $content, $utf8NoBom)
+            [System.IO.File]::WriteAllText($specFile, $specContent, $utf8NoBom)
         } else {
             # Match the bash twin (create-new-feature.sh): warn on stderr that no
             # spec template was found before creating an empty spec file, so the
@@ -290,6 +197,10 @@ if (-not $DryRun) {
             [Console]::Error.WriteLine("Warning: Spec template not found; created empty spec file")
             New-Item -ItemType File -Path $specFile -Force | Out-Null
         }
+    }
+    if ($needsRequirement -and $null -ne $requirementContent) {
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText($requirementFile, $requirementContent, $utf8NoBom)
     }
 
     # Persist to .specify/feature.json so downstream commands can find the feature
@@ -312,6 +223,8 @@ if ($Json) {
         BRANCH_NAME = $branchName
         SPEC_FILE = $specFile
         FEATURE_NUM = $featureNum
+        MODULE_NAME = $moduleName
+        FEATURE_ID = $featureId
     }
     if ($DryRun) {
         $obj | Add-Member -NotePropertyName 'DRY_RUN' -NotePropertyValue $true

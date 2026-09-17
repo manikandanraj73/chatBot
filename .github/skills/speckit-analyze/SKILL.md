@@ -68,9 +68,10 @@ Identify inconsistencies, duplications, ambiguities, and underspecified items ac
 
 Run `.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireSpec -RequireTasks -IncludeTasks` once from repo root and parse JSON for FEATURE_DIR and AVAILABLE_DOCS. Derive absolute paths:
 
+- REQUIREMENT = FEATURE_DIR/requirement.md
 - SPEC = FEATURE_DIR/spec.md
-- PLAN = FEATURE_DIR/plan.md
-- TASKS = FEATURE_DIR/tasks.md
+- PLAN = FEATURE_DIR/service/plan.md
+- TASKS = FEATURE_DIR/service/tasks.md
 
 Abort with an error message if any required file is missing (instruct the user to run missing prerequisite command).
 For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").

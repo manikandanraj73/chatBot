@@ -2,7 +2,7 @@
 
 **Branch**: `001-age-calculation-api` | **Date**: 2026-09-15 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/001-age-calculation-api/spec.md`
+**Input**: Feature specification from `/development/age/age-calculation-api/spec.md`
 
 ## Summary
 
@@ -33,13 +33,11 @@ Add a `GET /age/{birthYear}` endpoint to the existing `ChatBotController`. The e
 
 ## Phase 0: Research
 
-Research decisions are recorded in [research.md](./research.md). No unresolved technical unknowns remain: the existing controller pattern and Maven/Spring test conventions are sufficient.
+No unresolved technical unknowns remain: the existing controller pattern and Maven/Spring test conventions are sufficient.
 
 ## Phase 1: Design
 
-- [Data model](./data-model.md): defines the path input, calculated age result, and validation outcomes without DTO classes.
-- [API contract](./contracts/age-api.md): defines `GET /age/{birthYear}`, plain-string success output, and invalid-input behavior.
-- [Validation guide](./quickstart.md): provides runnable Maven and HTTP checks.
+The path input, calculated age result, validation outcomes, route contract, and response behavior are defined in the feature specification and requirement document.
 
 ## Implementation Approach
 
@@ -62,14 +60,12 @@ Research decisions are recorded in [research.md](./research.md). No unresolved t
 ### Documentation (this feature)
 
 ```text
-specs/001-age-calculation-api/
-├── plan.md
-├── research.md
-├── data-model.md
-├── contracts/
-│   └── age-api.md
-├── quickstart.md
-└── tasks.md
+development/age/age-calculation-api/
+├── requirement.md
+├── spec.md
+└── service/
+    ├── plan.md
+    └── tasks.md
 ```
 
 ### Source Code

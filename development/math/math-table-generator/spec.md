@@ -133,4 +133,4 @@ Request with out-of-range number -> 422 Unprocessable Entity
 
 ## SPEC_FILE
 
-specs/001-math-table-generator/spec.md
+development/math/math-table-generator/spec.md

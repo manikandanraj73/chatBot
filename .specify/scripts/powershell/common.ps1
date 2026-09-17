@@ -223,17 +223,21 @@ function Get-FeaturePathsEnv {
         $currentBranch = Split-Path -Leaf $featureDirTrimmed
     }
 
+    $serviceDir = Join-Path $featureDir 'service'
+
     [PSCustomObject]@{
         REPO_ROOT     = $repoRoot
         CURRENT_BRANCH = $currentBranch
         FEATURE_DIR   = $featureDir
+        SERVICE_DIR   = $serviceDir
+        REQUIREMENT   = Join-Path $featureDir 'requirement.md'
         FEATURE_SPEC  = Join-Path $featureDir 'spec.md'
-        IMPL_PLAN     = Join-Path $featureDir 'plan.md'
-        TASKS         = Join-Path $featureDir 'tasks.md'
-        RESEARCH      = Join-Path $featureDir 'research.md'
-        DATA_MODEL    = Join-Path $featureDir 'data-model.md'
-        QUICKSTART    = Join-Path $featureDir 'quickstart.md'
-        CONTRACTS_DIR = Join-Path $featureDir 'contracts'
+        IMPL_PLAN     = Join-Path $serviceDir 'plan.md'
+        TASKS         = Join-Path $serviceDir 'tasks.md'
+        RESEARCH      = Join-Path $serviceDir 'research.md'
+        DATA_MODEL    = Join-Path $serviceDir 'data-model.md'
+        QUICKSTART    = Join-Path $serviceDir 'quickstart.md'
+        CONTRACTS_DIR = Join-Path $serviceDir 'contracts'
     }
 }
 

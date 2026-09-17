@@ -2,7 +2,7 @@
 
 **Branch**: `003-chat-history` | **Date**: 2026-09-16 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/003-chat-history/spec.md`
+**Input**: Feature specification from `/development/chatbot/chat-history/spec.md`
 
 ## Summary
 
@@ -41,13 +41,11 @@ Add runtime in-memory chat history without changing existing chatbot or age-calc
 
 ## Phase 0: Research
 
-Research decisions are recorded in [research.md](./research.md). They cover in-memory concurrency, `HistoryDTO` list ownership, timestamp capture, deterministic ordering, JSON serialization, empty response handling, and preservation of existing routes.
+The feature specification and requirement document cover in-memory concurrency, `HistoryDTO` list ownership, timestamp capture, deterministic ordering, JSON serialization, empty response handling, and preservation of existing routes.
 
 ## Phase 1: Design
 
-- [Data model](./data-model.md): defines `HistoryDTO`, history entries, timestamps, ordering, and successful/failure state transitions.
-- [API contract](./contracts/chat-history-api.md): defines `GET /chatbot/history`, populated JSON array response, and empty-history response.
-- [Validation guide](./quickstart.md): defines Maven and live HTTP verification scenarios.
+The history data, timestamps, ordering, state transitions, route contract, response shape, and empty-history behavior are defined in the feature specification and requirement document.
 
 ## Implementation Approach
 
@@ -67,14 +65,12 @@ This is an additive change. Existing `POST /chatbot/request`, all age-calculatio
 ### Documentation
 
 ```text
-specs/003-chat-history/
-├── plan.md
-├── research.md
-├── data-model.md
-├── contracts/
-│   └── chat-history-api.md
-├── quickstart.md
-└── tasks.md
+development/chatbot/chat-history/
+├── requirement.md
+├── spec.md
+└── service/
+    ├── plan.md
+    └── tasks.md
 ```
 
 ### Source Code

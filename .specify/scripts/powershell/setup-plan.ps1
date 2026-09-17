@@ -36,7 +36,7 @@ if (-not $paths) {
 }
 
 # Ensure the feature directory exists
-New-Item -ItemType Directory -Path $paths.FEATURE_DIR -Force | Out-Null
+New-Item -ItemType Directory -Path $paths.SERVICE_DIR -Force | Out-Null
 
 # Copy plan template if plan doesn't already exist
 if (Test-Path $paths.IMPL_PLAN -PathType Leaf) {
@@ -75,14 +75,18 @@ if (Test-Path $paths.IMPL_PLAN -PathType Leaf) {
 if ($Json) {
     $result = [PSCustomObject]@{
         FEATURE_SPEC = $paths.FEATURE_SPEC
+        REQUIREMENT = $paths.REQUIREMENT
         IMPL_PLAN = $paths.IMPL_PLAN
         FEATURE_DIR = $paths.FEATURE_DIR
+        SERVICE_DIR = $paths.SERVICE_DIR
         BRANCH = $paths.CURRENT_BRANCH
     }
     $result | ConvertTo-Json -Compress
 } else {
     Write-Output "FEATURE_SPEC: $($paths.FEATURE_SPEC)"
+    Write-Output "REQUIREMENT: $($paths.REQUIREMENT)"
     Write-Output "IMPL_PLAN: $($paths.IMPL_PLAN)"
     Write-Output "FEATURE_DIR: $($paths.FEATURE_DIR)"
+    Write-Output "SERVICE_DIR: $($paths.SERVICE_DIR)"
     Write-Output "BRANCH: $($paths.CURRENT_BRANCH)"
 }

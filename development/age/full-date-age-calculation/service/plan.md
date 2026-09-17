@@ -2,7 +2,7 @@
 
 **Branch**: `002-full-date-age-calculation` | **Date**: 2026-09-16 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/002-full-date-age-calculation/spec.md`
+**Input**: Feature specification from `/development/age/full-date-age-calculation/spec.md`
 
 ## Summary
 
@@ -33,13 +33,11 @@ Replace the existing year-only `GET /age/{birthYear}` contract with a full-date 
 
 ## Phase 0: Research
 
-Research decisions are recorded in [research.md](./research.md). The design resolves strict parsing, calendar-period arithmetic, month-end normalization, exception placement, and the intentional replacement of the year-only route.
+The feature specification and requirement document define strict parsing, calendar-period arithmetic, month-end normalization, exception placement, and the intentional replacement of the year-only route.
 
 ## Phase 1: Design
 
-- [Data model](./data-model.md): defines the date input, age result, validation rules, and normalization behavior.
-- [API contract](./contracts/age-api.md): defines the replacement `GET /age/{birthDate}` contract and error responses.
-- [Validation guide](./quickstart.md): provides Maven and live HTTP checks.
+The date input, age result, validation rules, normalization behavior, replacement route, and error responses are defined in the feature specification and requirement document.
 
 ## Implementation Approach
 
@@ -67,14 +65,12 @@ This is an intentional breaking change for clients of `GET /age/{birthYear}`. Ex
 ### Documentation (this feature)
 
 ```text
-specs/002-full-date-age-calculation/
-├── plan.md
-├── research.md
-├── data-model.md
-├── contracts/
-│   └── age-api.md
-├── quickstart.md
-└── tasks.md
+development/age/full-date-age-calculation/
+├── requirement.md
+├── spec.md
+└── service/
+    ├── plan.md
+    └── tasks.md
 ```
 
 ### Source Code
