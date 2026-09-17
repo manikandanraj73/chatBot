@@ -78,6 +78,8 @@ if ($PathsOnly) {
             REPO_ROOT    = $paths.REPO_ROOT
             BRANCH       = $paths.CURRENT_BRANCH
             FEATURE_DIR  = $paths.FEATURE_DIR
+            SERVICE_DIR  = $paths.SERVICE_DIR
+            REQUIREMENT  = $paths.REQUIREMENT
             FEATURE_SPEC = $paths.FEATURE_SPEC
             IMPL_PLAN    = $paths.IMPL_PLAN
             TASKS        = $paths.TASKS
@@ -86,6 +88,8 @@ if ($PathsOnly) {
         Write-Output "REPO_ROOT: $($paths.REPO_ROOT)"
         Write-Output "BRANCH: $($paths.CURRENT_BRANCH)"
         Write-Output "FEATURE_DIR: $($paths.FEATURE_DIR)"
+        Write-Output "SERVICE_DIR: $($paths.SERVICE_DIR)"
+        Write-Output "REQUIREMENT: $($paths.REQUIREMENT)"
         Write-Output "FEATURE_SPEC: $($paths.FEATURE_SPEC)"
         Write-Output "IMPL_PLAN: $($paths.IMPL_PLAN)"
         Write-Output "TASKS: $($paths.TASKS)"
@@ -101,8 +105,15 @@ if (-not (Test-Path $paths.FEATURE_DIR -PathType Container)) {
     exit 1
 }
 
+if (-not (Test-Path $paths.REQUIREMENT -PathType Leaf)) {
+    [Console]::Error.WriteLine("ERROR: requirement.md not found in $($paths.FEATURE_DIR)")
+    $specifyCommand = '/speckit-specify'
+    [Console]::Error.WriteLine("Run $specifyCommand first to create the feature requirement.")
+    exit 1
+}
+
 if (-not (Test-Path $paths.IMPL_PLAN -PathType Leaf)) {
-    [Console]::Error.WriteLine("ERROR: plan.md not found in $($paths.FEATURE_DIR)")
+    [Console]::Error.WriteLine("ERROR: plan.md not found in $($paths.SERVICE_DIR)")
     $planCommand = '/speckit-plan'
     [Console]::Error.WriteLine("Run $planCommand first to create the implementation plan.")
     exit 1
@@ -118,7 +129,7 @@ if ($RequireSpec -and -not (Test-Path $paths.FEATURE_SPEC -PathType Leaf)) {
 
 # Check for tasks.md if required
 if ($RequireTasks -and -not (Test-Path $paths.TASKS -PathType Leaf)) {
-    [Console]::Error.WriteLine("ERROR: tasks.md not found in $($paths.FEATURE_DIR)")
+    [Console]::Error.WriteLine("ERROR: tasks.md not found in $($paths.SERVICE_DIR)")
     $tasksCommand = '/speckit-tasks'
     [Console]::Error.WriteLine("Run $tasksCommand first to create the task list.")
     exit 1
@@ -128,19 +139,19 @@ if ($RequireTasks -and -not (Test-Path $paths.TASKS -PathType Leaf)) {
 $docs = @()
 
 # Always check these optional docs
-if (Test-Path $paths.RESEARCH) { $docs += 'research.md' }
-if (Test-Path $paths.DATA_MODEL) { $docs += 'data-model.md' }
+if (Test-Path $paths.RESEARCH) { $docs += 'service/research.md' }
+if (Test-Path $paths.DATA_MODEL) { $docs += 'service/data-model.md' }
 
 # Check contracts directory (only if it exists and has files)
 if ((Test-Path $paths.CONTRACTS_DIR) -and (Get-ChildItem -Path $paths.CONTRACTS_DIR -ErrorAction SilentlyContinue | Select-Object -First 1)) {
-    $docs += 'contracts/'
+    $docs += 'service/contracts/'
 }
 
-if (Test-Path $paths.QUICKSTART) { $docs += 'quickstart.md' }
+if (Test-Path $paths.QUICKSTART) { $docs += 'service/quickstart.md' }
 
 # Include tasks.md if requested and it exists
 if ($IncludeTasks -and (Test-Path $paths.TASKS)) {
-    $docs += 'tasks.md'
+    $docs += 'service/tasks.md'
 }
 
 $templateContent = $null
@@ -174,12 +185,12 @@ if ($Json) {
     # line along with the return value and left AVAILABLE_DOCS empty. Drop
     # only the boolean so the per-document lines reach stdout like the
     # bash and Python twins.
-    Test-FileExists -Path $paths.RESEARCH -Description 'research.md' | Where-Object { $_ -isnot [bool] }
-    Test-FileExists -Path $paths.DATA_MODEL -Description 'data-model.md' | Where-Object { $_ -isnot [bool] }
-    Test-DirHasFiles -Path $paths.CONTRACTS_DIR -Description 'contracts/' | Where-Object { $_ -isnot [bool] }
-    Test-FileExists -Path $paths.QUICKSTART -Description 'quickstart.md' | Where-Object { $_ -isnot [bool] }
+    Test-FileExists -Path $paths.RESEARCH -Description 'service/research.md' | Where-Object { $_ -isnot [bool] }
+    Test-FileExists -Path $paths.DATA_MODEL -Description 'service/data-model.md' | Where-Object { $_ -isnot [bool] }
+    Test-DirHasFiles -Path $paths.CONTRACTS_DIR -Description 'service/contracts/' | Where-Object { $_ -isnot [bool] }
+    Test-FileExists -Path $paths.QUICKSTART -Description 'service/quickstart.md' | Where-Object { $_ -isnot [bool] }
 
     if ($IncludeTasks) {
-        Test-FileExists -Path $paths.TASKS -Description 'tasks.md' | Where-Object { $_ -isnot [bool] }
+        Test-FileExists -Path $paths.TASKS -Description 'service/tasks.md' | Where-Object { $_ -isnot [bool] }
     }
 }

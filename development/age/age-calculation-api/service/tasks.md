@@ -5,9 +5,9 @@ description: "Executable task list for the Age Calculation API"
 
 # Tasks: Age Calculation API
 
-**Input**: Design documents from `/specs/001-age-calculation-api/`
+**Input**: Design documents from `/development/age/age-calculation-api/`
 
-**Prerequisites**: [plan.md](./plan.md), [spec.md](./spec.md), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/age-api.md](./contracts/age-api.md)
+**Prerequisites**: [plan.md](./plan.md), [spec.md](../spec.md), [requirement.md](../requirement.md)
 
 **Tests**: Included because the project constitution requires automated tests for behavior changes.
 
@@ -16,7 +16,7 @@ description: "Executable task list for the Age Calculation API"
 **Purpose**: Confirm the existing Spring Boot structure and test entry points before implementation.
 
 - [X] T001 Confirm the existing controller, service, and test package layout in `src/main/java/com/example/chatbot/` and `src/test/java/com/example/chatbot/` and preserve the current Maven/Spring Boot setup
-- [X] T002 [P] Confirm the feature contract and validation rules in `specs/001-age-calculation-api/contracts/age-api.md` and `specs/001-age-calculation-api/data-model.md` before writing implementation code
+- [X] T002 [P] Confirm the feature contract and validation rules in `../spec.md` and `../requirement.md` before writing implementation code
 
 ---
 
@@ -78,9 +78,9 @@ description: "Executable task list for the Age Calculation API"
 
 **Purpose**: Verify the completed feature against the documented contract and project quality gates.
 
-- [X] T016 [P] Update endpoint examples or feature documentation in `specs/001-age-calculation-api/contracts/age-api.md` and `specs/001-age-calculation-api/quickstart.md` if implementation error wording differs from the documented behavior
+- [X] T016 [P] Review `../spec.md` and `../requirement.md` to ensure endpoint behavior and validation wording remain accurate
 - [X] T017 Run the focused service and controller tests, then run `mvn test` from the repository root and resolve any failures without changing unrelated chatbot behavior
-- [X] T018 Run the commands in `specs/001-age-calculation-api/quickstart.md` against the running application and verify the `GET /age/2000` success response and representative `400 Bad Request` responses
+- [X] T018 Run the focused service and controller tests against the application and verify the `GET /age/2000` success response and representative `400 Bad Request` responses
 
 ---
 

@@ -33,7 +33,7 @@ if (-not $paths) {
 }
 
 if (-not (Test-Path $paths.IMPL_PLAN -PathType Leaf)) {
-    [Console]::Error.WriteLine("ERROR: plan.md not found in $($paths.FEATURE_DIR)")
+    [Console]::Error.WriteLine("ERROR: plan.md not found in $($paths.SERVICE_DIR)")
     $planCommand = '/speckit-plan'
     [Console]::Error.WriteLine("Run $planCommand first to create the implementation plan.")
     exit 1
@@ -43,6 +43,12 @@ if (-not (Test-Path $paths.FEATURE_SPEC -PathType Leaf)) {
     [Console]::Error.WriteLine("ERROR: spec.md not found in $($paths.FEATURE_DIR)")
     $specifyCommand = '/speckit-specify'
     [Console]::Error.WriteLine("Run $specifyCommand first to create the feature structure.")
+    exit 1
+}
+
+if (-not (Test-Path $paths.REQUIREMENT -PathType Leaf)) {
+    [Console]::Error.WriteLine("ERROR: requirement.md not found in $($paths.FEATURE_DIR)")
+    [Console]::Error.WriteLine("Run /speckit-specify first to create the feature requirement.")
     exit 1
 }
 
@@ -73,12 +79,14 @@ if ($tasksTemplate -and (Test-Path -LiteralPath $tasksTemplate -PathType Leaf)) 
 if ($Json) {
     [PSCustomObject]@{
         FEATURE_DIR    = $paths.FEATURE_DIR
+        SERVICE_DIR    = $paths.SERVICE_DIR
         AVAILABLE_DOCS = $docs
         TASKS_TEMPLATE = $tasksTemplate
         TASKS_TEMPLATE_CONTENT = $tasksTemplateContent
     } | ConvertTo-Json -Compress
 } else {
     Write-Output "FEATURE_DIR: $($paths.FEATURE_DIR)"
+    Write-Output "SERVICE_DIR: $($paths.SERVICE_DIR)"
     Write-Output "TASKS_TEMPLATE: $(if ($tasksTemplate) { $tasksTemplate } else { 'not found' })"
     Write-Output "AVAILABLE_DOCS:"
     # These helpers report their line with Write-Output and ALSO return a

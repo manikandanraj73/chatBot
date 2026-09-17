@@ -5,9 +5,9 @@ description: "Executable task list for the Chat History API"
 
 # Tasks: Chat History API
 
-**Input**: Design documents from `/specs/003-chat-history/`
+**Input**: Design documents from `/development/chatbot/chat-history/`
 
-**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/chat-history-api.md, quickstart.md
+**Prerequisites**: [plan.md](./plan.md), [spec.md](../spec.md), [requirement.md](../requirement.md)
 
 **Tests**: Included because the project constitution requires automated tests for behavior changes.
 
@@ -16,8 +16,8 @@ description: "Executable task list for the Chat History API"
 **Purpose**: Confirm the existing application boundaries and test seams before adding runtime history.
 
 - [X] T001 Confirm the existing `ChatBotController`, `ChatBotService`, `ChatRequest`, age endpoints, and test packages in `src/main/java/com/example/chatbot/` and `src/test/java/com/example/chatbot/`
-- [X] T002 [P] Confirm the `GET /chatbot/history` JSON contract and empty-history response in `specs/003-chat-history/contracts/chat-history-api.md`
-- [X] T003 [P] Confirm `HistoryDTO` list ownership, UTC timestamp, sequence ordering, and failure state transitions in `specs/003-chat-history/data-model.md`
+- [X] T002 [P] Confirm the `GET /chatbot/history` JSON contract and empty-history response in `../spec.md` and `../requirement.md`
+- [X] T003 [P] Confirm `HistoryDTO` list ownership, UTC timestamp, sequence ordering, and failure state transitions in `../spec.md` and `../requirement.md`
 
 ---
 
@@ -103,10 +103,10 @@ description: "Executable task list for the Chat History API"
 
 **Purpose**: Validate the complete feature and preserve documentation accuracy.
 
-- [X] T025 [P] Update `specs/003-chat-history/contracts/chat-history-api.md`, `specs/003-chat-history/data-model.md`, and `specs/003-chat-history/quickstart.md` if implementation details change the documented contract
+- [X] T025 [P] Review `../spec.md` and `../requirement.md` to ensure implementation details remain consistent with the documented contract
 - [X] T026 [P] Review `src/test/java/com/example/chatbot/ChatbotApplicationTests.java` to ensure the Spring context still loads with the new DTO/service and no real external chatbot call is introduced
 - [X] T027 Run focused history/controller tests, then run `.\mvnw.cmd test` from the repository root and resolve only feature-related failures
-- [X] T028 Run the manual scenarios in `specs/003-chat-history/quickstart.md`, including successful recording, failed-request isolation, JSON retrieval, empty history, and restart clearing
+- [X] T028 Run focused history and controller tests covering successful recording, failed-request isolation, JSON retrieval, empty history, and restart clearing
 - [X] T029 Review the final diff to confirm no database dependency, map-based history, authentication scope, pagination, deletion, or changes to existing age/chat contracts were introduced
 
 ---

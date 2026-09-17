@@ -5,9 +5,9 @@ description: "Executable task list for the Full Date Age Calculation API"
 
 # Tasks: Full Date Age Calculation API
 
-**Input**: Design documents from `/specs/002-full-date-age-calculation/`
+**Input**: Design documents from `/development/age/full-date-age-calculation/`
 
-**Prerequisites**: [plan.md](./plan.md), [spec.md](./spec.md), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/age-api.md](./contracts/age-api.md)
+**Prerequisites**: [plan.md](./plan.md), [spec.md](../spec.md), [requirement.md](../requirement.md)
 
 **Tests**: Included because the project constitution requires automated tests for behavior changes and the feature specifies independently testable user stories.
 
@@ -16,8 +16,8 @@ description: "Executable task list for the Full Date Age Calculation API"
 **Purpose**: Confirm the existing application structure and replacement contract before modifying the implemented year-only feature.
 
 - [X] T001 Confirm the existing controller, service, exception, and test packages under `src/main/java/com/example/chatbot/` and `src/test/java/com/example/chatbot/` before replacing the year-only age contract
-- [X] T002 [P] Confirm the replacement route, strict date format, response examples, and compatibility impact in `specs/002-full-date-age-calculation/contracts/age-api.md`
-- [X] T003 [P] Confirm the input and calendar-normalization rules in `specs/002-full-date-age-calculation/data-model.md` before writing calculation tests
+- [X] T002 [P] Confirm the replacement route, strict date format, response examples, and compatibility impact in `../spec.md` and `../requirement.md`
+- [X] T003 [P] Confirm the input and calendar-normalization rules in `../spec.md` and `../requirement.md` before writing calculation tests
 
 ---
 
@@ -83,11 +83,11 @@ description: "Executable task list for the Full Date Age Calculation API"
 
 **Purpose**: Align documentation, verify compatibility impact, and run all quality gates.
 
-- [X] T021 [P] Update `specs/002-full-date-age-calculation/contracts/age-api.md` and `specs/002-full-date-age-calculation/quickstart.md` if final validation wording or normalization examples differ from the implemented behavior
+- [X] T021 [P] Review `../spec.md` and `../requirement.md` to ensure final validation wording and normalization behavior remain accurate
 - [X] T022 [P] Review `src/test/java/com/example/chatbot/ChatbotApplicationTests.java` and its test-only configuration to ensure the application context remains loadable without exposing secrets
 - [X] T023 Run focused service and controller tests, then run `.\mvnw.cmd test` from the repository root and resolve failures without changing unrelated chatbot behavior
-- [X] T024 Run the live HTTP checks in `specs/002-full-date-age-calculation/quickstart.md` and verify the valid full-date response, invalid-date `400` responses, and rejection of the old year-only request
-- [X] T025 Review the final diff for accidental DTO/controller additions and confirm the compatibility-breaking change is documented in `specs/002-full-date-age-calculation/spec.md`
+- [X] T024 Run focused service and controller tests and verify the valid full-date response, invalid-date `400` responses, and rejection of the old year-only request
+- [X] T025 Review the final diff for accidental DTO/controller additions and confirm the compatibility-breaking change is documented in `../spec.md`
 
 ---
 
