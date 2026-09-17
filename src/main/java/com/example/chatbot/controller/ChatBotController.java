@@ -40,8 +40,9 @@ public class ChatBotController {
 		ChatHistoryService.RequestMetadata requestMetadata = chatHistoryService.captureRequest();
 		System.out.println("You : " + chatRequest.getMessage());
 		String response = chatBotService.chat(chatRequest.getMessage());
+		if(!response.equals("null")) {
 		chatHistoryService.recordSuccessfulExchange(
-				chatRequest.getMessage(), response, requestMetadata);
+				chatRequest.getMessage(), response, requestMetadata);}
 		System.out.println("AI : " + response);
 		return response;
 	}
